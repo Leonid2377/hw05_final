@@ -215,3 +215,4 @@ class PostFormTests(TestCase):
         )
         self.assertEqual(response.status_code, HTTPStatus.OK)
         self.assertEqual(Comment.objects.count(), 0)
+

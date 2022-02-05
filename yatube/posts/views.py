@@ -129,4 +129,3 @@ def delete_post(request, post_id):
     if request.user == post.author and request.user.is_authenticated:
         post.delete()
     return redirect('posts:profile', request.user.username)
-

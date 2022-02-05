@@ -1,0 +1,2 @@
+NUMBER_POSTS_ON_PAGE = 10
+UPLOAD_TO = 'posts/'

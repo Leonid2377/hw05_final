@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% load thumbnail %}
+{% block title %}
+  {{ post.text|truncatechars:30 }}
+{% endblock %}
+{% block content %}
+  <div class="container py-5">
+    <div class="row">
+      <aside class="col-12 col-md-3">
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            Всего постов автора:  <span >{{ post.author.posts.count }}</span>
+          </li>
+        </ul>
+      </aside>
+      <article class="col-12 col-md-9">
+        {% include "posts/includes/post.html" %}
+        <hr>
+        {% if post.author == user %}
+          <a class="btn btn-primary" href="{% url 'posts:post_edit' post.pk %}">
+            редактировать запись
+          </a>
+          <a class="btn btn-danger" href="{% url 'posts:delete_post' post.pk %}">
+            удалить запись
+          </a>
+        {% endif %}
+        {% include "posts/includes/comments.html" %}
+      </article>
+    </div>
+  </div>
+{% endblock %}

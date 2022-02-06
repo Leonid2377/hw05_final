@@ -1,8 +1,8 @@
 import pytest
+from django.core.cache import cache
 from django.core.paginator import Page, Paginator
 
 pytestmark = [pytest.mark.django_db]
-
 
 class TestGroupPaginatorView:
 
@@ -13,7 +13,7 @@ class TestGroupPaginatorView:
             assert False, f'''Страница `/group/<slug>/` работает неправильно. Ошибка: `{e}`'''
         if response.status_code in (301, 302):
             response = client.get(f'/group/{few_posts_with_group.group.slug}/')
-        assert response.status_code != 404, 'Страница `/group/<slug>/` не найдена, проверьте этот адрес в *test_urls.py*'
+        assert response.status_code != 404, 'Страница `/group/<slug>/` не найдена, проверьте этот адрес в *urls.py*'
         assert 'page_obj' in response.context, (
             'Проверьте, что передали переменную `page_obj` в контекст страницы `/group/<slug>/`'
         )
@@ -23,7 +23,7 @@ class TestGroupPaginatorView:
 
     def test_group_paginator_not_in_context_view(self, client, post_with_group):
         response = client.get(f'/group/{post_with_group.group.slug}/')
-        assert response.status_code != 404, 'Страница `/group/<slug>/` не найдена, проверьте этот адрес в *test_urls.py*'
+        assert response.status_code != 404, 'Страница `/group/<slug>/` не найдена, проверьте этот адрес в *urls.py*'
         assert isinstance(response.context['page_obj'].paginator, Paginator), (
             'Проверьте, что переменная `paginator` на странице `/group/<slug>/` типа `Paginator`'
         )
@@ -35,8 +35,9 @@ class TestGroupPaginatorView:
         )
 
     def test_index_paginator_view(self, client, post_with_group):
+        cache.clear()
         response = client.get('/')
-        assert response.status_code != 404, 'Страница `/` не найдена, проверьте этот адрес в *test_urls.py*'
+        assert response.status_code != 404, 'Страница `/` не найдена, проверьте этот адрес в *urls.py*'
         assert 'page_obj' in response.context, (
             'Проверьте, что передали переменную `page_obj` в контекст страницы `/`'
         )

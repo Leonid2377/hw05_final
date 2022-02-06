@@ -11,7 +11,7 @@ INDEX_URL = reverse('posts:index')
 POST_CREATE_URL = reverse('posts:post_create')
 UNEXISTING_URL = '/unexisting_page/'
 PROFILE_URL = reverse('posts:profile', args=[USERNAME])
-GROUP_LIST_URL = reverse('posts:group_list', args=[SLUG])
+GROUP_LIST_URL = reverse('posts:group_posts', args=[SLUG])
 LOGIN_URL = reverse('users:login')
 POST_CREATE_REDIRECT_TO_LOGIN_URL = f'{ LOGIN_URL }?next={ POST_CREATE_URL }'
 FOLLOW_INDEX_URL = reverse('posts:follow_index')

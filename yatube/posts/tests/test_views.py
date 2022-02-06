@@ -15,8 +15,8 @@ SLUG = 'test-slug'
 FOREIGN_SLUG = 'test-slug2'
 USERNAME = 'NoName'
 USERNAME_2 = 'NoName2'
-GROUP_LIST_URL = reverse('posts:group_list', args=[SLUG])
-FOREIGN_GROUP_LIST_URL = reverse('posts:group_list', args=[FOREIGN_SLUG])
+GROUP_LIST_URL = reverse('posts:group_posts', args=[SLUG])
+FOREIGN_GROUP_LIST_URL = reverse('posts:group_posts', args=[FOREIGN_SLUG])
 INDEX_URL = reverse('posts:index')
 PROFILE_URL = reverse('posts:profile', args=[USERNAME_2])
 FOLLOW_URL = reverse('posts:profile_follow', args=[USERNAME_2])

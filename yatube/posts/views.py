@@ -21,7 +21,7 @@ def index(request):
     )
 
 
-def group_list(request, slug):
+def group_posts(request, slug):
     group = get_object_or_404(Group, slug=slug)
     context = {
         'group': group,

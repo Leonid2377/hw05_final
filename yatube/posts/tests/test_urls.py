@@ -93,7 +93,7 @@ class PostUrlTests(TestCase):
         for url, user, redirect in urls_names:
             with self.subTest(url=url):
                 self.assertRedirects(user.get(url), redirect)
-
-    def test_error_page(self):
-        response = self.client.get(UNEXISTING)
-        self.assertTemplateUsed(response, ('core/404.html'))
+    #
+    # def test_error_page(self):
+    #     response = self.client.get(UNEXISTING)
+    #     self.assertTemplateUsed(response, ('core/404.html'))

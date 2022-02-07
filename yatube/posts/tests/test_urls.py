@@ -1,6 +1,6 @@
 from django.test import Client, TestCase
 from django.urls import reverse
-from django.conf.urls import handler404
+# from django.conf.urls import handler404
 from http import HTTPStatus
 
 from ..models import Group, Post, User

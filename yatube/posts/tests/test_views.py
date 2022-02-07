@@ -133,6 +133,29 @@ class PostUrlTests(TestCase):
         cache.clear()
         self.assertNotEqual(response, response.content)
 
+    def test_follow_unfollow(self):
+        Comment.objects.create(
+            post=self.post,
+            text='test',
+            author=self.user,
+        )
+        follow_count = Follow.objects.count()
+        self.authorized_client.post(
+            reverse('posts:profile_follow',
+                    kwargs={'username': self.follower})
+        )
+        self.assertTrue(Follow.objects.filter(
+            user=self.user, author=self.follower).exists())
+        self.assertEqual(Follow.objects.count(), follow_count + 1)
+
+        self.authorized_client.post(
+            reverse('posts:profile_unfollow',
+                    kwargs={'username': self.follower})
+        )
+        self.assertEqual(Follow.objects.count(), follow_count)
+        self.assertFalse(Follow.objects.filter(
+            user=self.user, author=self.follower).exists())
+
 
 class PaginatorViewsTest(TestCase):
     @classmethod
@@ -157,25 +180,3 @@ class PaginatorViewsTest(TestCase):
         calculation_obj = TOTAL_POSTS % NUMBER_POSTS_ON_PAGE
         self.assertEqual(calculation_len_obj, calculation_obj)
 
-    def test_follow_unfollow(self):
-        Comment.objects.create(
-            post=self.post,
-            text='test',
-            author=self.user,
-        )
-        follow_count = Follow.objects.count()
-        self.authorized_client.post(
-            reverse('posts:profile_follow',
-                    kwargs={'username': self.follower})
-        )
-        self.assertTrue(Follow.objects.filter(
-            user=self.user, author=self.follower).exists())
-        self.assertEqual(Follow.objects.count(), follow_count + 1)
-
-        self.authorized_client.post(
-            reverse('posts:profile_unfollow',
-                    kwargs={'username': self.follower})
-        )
-        self.assertEqual(Follow.objects.count(), follow_count)
-        self.assertFalse(Follow.objects.filter(
-            user=self.user, author=self.follower).exists())

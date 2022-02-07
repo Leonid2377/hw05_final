@@ -179,4 +179,3 @@ class PaginatorViewsTest(TestCase):
         calculation_len_obj = len(response.context['page_obj'])
         calculation_obj = TOTAL_POSTS % NUMBER_POSTS_ON_PAGE
         self.assertEqual(calculation_len_obj, calculation_obj)
-

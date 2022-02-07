@@ -11,6 +11,7 @@ from .settings import NUMBER_POSTS_ON_PAGE
 # я неделю его пытался восстановить - не вышло
 # в итоге пришлось все делать заново
 
+
 def pagination(request, objects):
     post_list = objects
     paginator = Paginator(post_list, NUMBER_POSTS_ON_PAGE)

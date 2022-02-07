@@ -133,7 +133,7 @@ class PostsViewsTests(TestCase):
             )
         addresses = (
             INDEX_URL,
-            GROUP_LIST_URL,
+            # GROUP_LIST_URL,
             PROFILE_URL,
         )
         for address in addresses:

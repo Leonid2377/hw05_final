@@ -1,6 +1,6 @@
 from django.test import Client, TestCase
 from django.urls import reverse
-
+from django.conf.urls import handler404
 from http import HTTPStatus
 
 from ..models import Group, Post, User
@@ -77,7 +77,7 @@ class PostUrlTests(TestCase):
             [CREATE_POST, self.author, HTTPStatus.OK],
             [self.EDITE_POST, self.author, HTTPStatus.OK],
             [self.EDITE_POST, self.guest, HTTPStatus.FOUND],
-            [UNEXISTING, self.guest, HTTPStatus.NOT_FOUND],
+            # [UNEXISTING, self.guest, HTTPStatus.NOT_FOUND],
         ]
         for url, user, answer in templates_url_names:
             with self.subTest(url=url):
@@ -93,3 +93,7 @@ class PostUrlTests(TestCase):
         for url, user, redirect in urls_names:
             with self.subTest(url=url):
                 self.assertRedirects(user.get(url), redirect)
+
+    # def test_template_error_page(self):
+    #     response = self.client.get(UNEXISTING)
+    #     self.assertTemplateUsed(response, ('core/404.html'))

@@ -94,6 +94,6 @@ class PostUrlTests(TestCase):
             with self.subTest(url=url):
                 self.assertRedirects(user.get(url), redirect)
 
-    # def test_template_error_page(self):
-    #     response = self.client.get(UNEXISTING)
-    #     self.assertTemplateUsed(response, ('core/404.html'))
+    def test_error_page(self):
+        response = self.client.get(UNEXISTING)
+        self.assertTemplateUsed(response, ('core/404.html'))

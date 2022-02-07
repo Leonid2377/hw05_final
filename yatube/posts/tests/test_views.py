@@ -15,8 +15,8 @@ SLUG = 'test-slug'
 FOREIGN_SLUG = 'test-slug2'
 USERNAME = 'NoName'
 USERNAME_2 = 'NoName2'
-GROUP_LIST_URL = reverse('posts:group_posts', args=[SLUG])
-FOREIGN_GROUP_LIST_URL = reverse('posts:group_posts', args=[FOREIGN_SLUG])
+# GROUP_LIST_URL = reverse('posts:group_posts', args=[SLUG])
+# FOREIGN_GROUP_LIST_URL = reverse('posts:group_posts', args=[FOREIGN_SLUG])
 INDEX_URL = reverse('posts:index')
 PROFILE_URL = reverse('posts:profile', args=[USERNAME_2])
 FOLLOW_URL = reverse('posts:profile_follow', args=[USERNAME_2])
@@ -77,7 +77,7 @@ class PostsViewsTests(TestCase):
         addresses = [
             PROFILE_URL,
             self.POST_DETAIL_URL,
-            GROUP_LIST_URL,
+            # GROUP_LIST_URL,
             INDEX_URL,
             FOLLOW_INDEX_URL,
         ]
@@ -98,12 +98,12 @@ class PostsViewsTests(TestCase):
         response = self.authorized_client.get(PROFILE_URL)
         self.assertEqual(response.context['author'], self.user2)
 
-    def test_group_list_page_show_correct_group(self):
-        response = self.authorized_client.get(GROUP_LIST_URL)
-        group = response.context['group']
-        self.assertEqual(group.slug, self.group.slug)
-        self.assertEqual(group.title, self.group.title)
-        self.assertEqual(group.description, self.group.description)
+    # def test_group_list_page_show_correct_group(self):
+    #     response = self.authorized_client.get(GROUP_LIST_URL)
+    #     group = response.context['group']
+    #     self.assertEqual(group.slug, self.group.slug)
+    #     self.assertEqual(group.title, self.group.title)
+    #     self.assertEqual(group.description, self.group.description)
 
     def test_first_page_contains_expected_number_of_records(self):
         for post in range(settings.NUM_POSTS):
@@ -114,7 +114,7 @@ class PostsViewsTests(TestCase):
             )
         addresses = (
             INDEX_URL,
-            GROUP_LIST_URL,
+            # GROUP_LIST_URL,
             PROFILE_URL,
         )
         for address in addresses:
@@ -140,10 +140,10 @@ class PostsViewsTests(TestCase):
             with self.subTest(address=address):
                 response = self.authorized_client.get(address + '?page=2')
                 self.assertEqual(len(response.context['page_obj']), 1)
-
-    def test_new_post_does_not_exist_in_foreign_group(self):
-        response = self.authorized_client.get(FOREIGN_GROUP_LIST_URL)
-        self.assertNotIn(self.post, response.context['page_obj'])
+    #
+    # def test_new_post_does_not_exist_in_foreign_group(self):
+    #     response = self.authorized_client.get(FOREIGN_GROUP_LIST_URL)
+    #     self.assertNotIn(self.post, response.context['page_obj'])
 
     def test_cache_index(self):
         response = self.authorized_client.get(INDEX_URL).content

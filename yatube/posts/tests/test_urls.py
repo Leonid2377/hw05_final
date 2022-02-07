@@ -11,7 +11,7 @@ INDEX_URL = reverse('posts:index')
 POST_CREATE_URL = reverse('posts:post_create')
 UNEXISTING_URL = '/unexisting_page/'
 PROFILE_URL = reverse('posts:profile', args=[USERNAME])
-GROUP_LIST_URL = reverse('posts:group_posts', args=[SLUG])
+# GROUP_LIST_URL = reverse('posts:group_posts', args=[SLUG])
 LOGIN_URL = reverse('users:login')
 POST_CREATE_REDIRECT_TO_LOGIN_URL = f'{ LOGIN_URL }?next={ POST_CREATE_URL }'
 FOLLOW_INDEX_URL = reverse('posts:follow_index')
@@ -67,7 +67,7 @@ class PostURLTests(TestCase):
             INDEX_URL: 'posts/index.html',
             POST_CREATE_URL: 'posts/create_post.html',
             self.POST_EDIT_URL: 'posts/create_post.html',
-            GROUP_LIST_URL: 'posts/group_list.html',
+            # GROUP_LIST_URL: 'posts/group_list.html',
             self.POST_DETAIL_URL: 'posts/post_detail.html',
             PROFILE_URL: 'posts/profile.html',
             FOLLOW_INDEX_URL: 'posts/follow.html',
@@ -105,7 +105,7 @@ class PostURLTests(TestCase):
             [POST_CREATE_URL, self.authorized_client, HTTPStatus.OK],
             [self.POST_EDIT_URL, self.authorized_client, HTTPStatus.OK],
             [INDEX_URL, self.guest_client, HTTPStatus.OK],
-            [GROUP_LIST_URL, self.guest_client, HTTPStatus.OK],
+            # [GROUP_LIST_URL, self.guest_client, HTTPStatus.OK],
             [self.POST_DETAIL_URL, self.guest_client, HTTPStatus.OK],
             [PROFILE_URL, self.guest_client, HTTPStatus.OK],
             [POST_CREATE_URL, self.guest_client, HTTPStatus.FOUND],

@@ -7,6 +7,9 @@ from .forms import PostForm, CommentForm
 from .models import Group, Post, User, Follow
 from .settings import NUMBER_POSTS_ON_PAGE
 
+# прошу прощения что так долго, после прошлого ревью - лег проект
+# я неделю его пытался восстановить - не вышло
+# в итоге пришлось все делать заново
 
 def pagination(request, objects):
     post_list = objects

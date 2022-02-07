@@ -1,124 +1,95 @@
-from http import HTTPStatus
-
 from django.test import Client, TestCase
 from django.urls import reverse
 
+from http import HTTPStatus
+
 from ..models import Group, Post, User
 
-USERNAME = 'AuthorPost'
+USERNAME = 'tester'
+USERNAME_2 = 'tester_2'
 SLUG = 'test-slug'
-INDEX_URL = reverse('posts:index')
-POST_CREATE_URL = reverse('posts:post_create')
-UNEXISTING_URL = '/unexisting_page/'
-PROFILE_URL = reverse('posts:profile', args=[USERNAME])
-# GROUP_LIST_URL = reverse('posts:group_posts', args=[SLUG])
-LOGIN_URL = reverse('users:login')
-POST_CREATE_REDIRECT_TO_LOGIN_URL = f'{ LOGIN_URL }?next={ POST_CREATE_URL }'
-FOLLOW_INDEX_URL = reverse('posts:follow_index')
-FOLLOW_URL = reverse('posts:profile_follow', args=[USERNAME])
-UNFOLLOW_URL = reverse('posts:profile_unfollow', args=[USERNAME])
-FOLLOW_REDIRECT_TO_LOGIN_URL = f'{ LOGIN_URL }?next={ FOLLOW_URL }'
-UNFOLLOW_REDIRECT_TO_LOGIN_URL = f'{ LOGIN_URL }?next={ UNFOLLOW_URL }'
-FOLLOW_INDEX_REDIRECT_TO_LOGIN_URL = f'{ LOGIN_URL }?next={ FOLLOW_INDEX_URL}'
+INDEX = reverse('posts:index')
+GROUP = reverse('posts:group',
+                kwargs={'slug': SLUG})
+PROFILE = reverse('posts:profile',
+                  kwargs={'username': USERNAME})
+CREATE_POST = reverse('posts:post_create')
+UNEXISTING = '/posts/unexisting/'
+LOGIN_REDIRECT = reverse('users:login')
 
 
-class PostURLTests(TestCase):
+class PostUrlTests(TestCase):
+
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
         cls.user = User.objects.create_user(username=USERNAME)
-        cls.user_not_author_post = User.objects.create_user(
-            username='NotAuthorPost'
-        )
-        cls.guest_client = Client()
-        cls.authorized_client = Client()
-        cls.not_author_of_post_client = Client()
-        cls.not_author_of_post_client.force_login(
-            cls.user_not_author_post
-        )
-        cls.authorized_client.force_login(cls.user)
-        cls.post = Post.objects.create(
-            text='Тест текст',
-            author=cls.user,
-        )
-        cls.POST_EDIT_URL = reverse(
-            'posts:post_edit', args=[cls.post.pk]
-        )
-        cls.POST_EDIT_REDIRECT_TO_LOGIN_URL = (
-            f'{ LOGIN_URL }?next={ cls.POST_EDIT_URL }'
-        )
-        cls.POST_DETAIL_URL = reverse(
-            'posts:post_detail', args=[cls.post.pk]
-        )
-        cls.COMMENT_CREATE_URL = reverse(
-            'posts:add_comment', args=[cls.post.pk]
-        )
-        cls.COMMENT_CREATE_REDIRECT_TO_LOGIN_URL = (
-            f'{ LOGIN_URL }?next={ cls.COMMENT_CREATE_URL }'
-        )
+        cls.user_2 = User.objects.create_user(username=USERNAME_2)
         cls.group = Group.objects.create(
-            title='Тест заголовок',
+            title='Тестовый заголовок',
             slug=SLUG,
-            description='Тест описание',
+            description='Тестовое описание',
         )
+        cls.post = Post.objects.create(
+            author=cls.user,
+            text='Тестовый текст',
+            group=cls.group,
+        )
+        cls.POST_DETAIL = reverse('posts:post_detail',
+                                  kwargs={'post_id': cls.post.id})
+
+        cls.EDITE_POST = reverse('posts:post_edit',
+                                 kwargs={'post_id': cls.post.id})
+
+    def setUp(self):
+        self.author = Client()
+        self.author.force_login(self.user)
+        self.guest = Client()
+        self.another = Client()
+        self.another.force_login(self.user_2)
 
     def test_urls_uses_correct_template(self):
-        template_urls_names = {
-            INDEX_URL: 'posts/index.html',
-            POST_CREATE_URL: 'posts/create_post.html',
-            self.POST_EDIT_URL: 'posts/create_post.html',
-            # GROUP_LIST_URL: 'posts/group_list.html',
-            self.POST_DETAIL_URL: 'posts/post_detail.html',
-            PROFILE_URL: 'posts/profile.html',
-            FOLLOW_INDEX_URL: 'posts/follow.html',
-        }
-        for address, template in template_urls_names.items():
-            with self.subTest(address=address):
+        """URL-адрес использует соответствующий шаблон для пользователя."""
+
+        templates_url_names = [
+            [INDEX, 'posts/index.html'],
+            [GROUP, 'posts/group_list.html'],
+            [PROFILE, 'posts/profile.html'],
+            [self.POST_DETAIL, 'posts/post_detail.html'],
+            [CREATE_POST, 'posts/create_post.html'],
+            [self.EDITE_POST, 'posts/create_post.html'],
+        ]
+        for url, template in templates_url_names:
+            with self.subTest(url=url):
                 self.assertTemplateUsed(
-                    self.authorized_client.get(address),
-                    template
+                    self.author.get(url), template
                 )
 
-    def test_urls_redirects_for_different_clients(self):
-        cases = [
-            [POST_CREATE_URL, self.guest_client,
-             POST_CREATE_REDIRECT_TO_LOGIN_URL],
-            [self.POST_EDIT_URL, self.guest_client,
-             self.POST_EDIT_REDIRECT_TO_LOGIN_URL],
-            [self.POST_EDIT_URL, self.not_author_of_post_client, INDEX_URL],
-            [self.COMMENT_CREATE_URL, self.guest_client,
-             self.COMMENT_CREATE_REDIRECT_TO_LOGIN_URL],
-            [FOLLOW_URL, self.guest_client, FOLLOW_REDIRECT_TO_LOGIN_URL],
-            [UNFOLLOW_URL, self.guest_client, UNFOLLOW_REDIRECT_TO_LOGIN_URL],
-            [FOLLOW_INDEX_URL, self.guest_client,
-             FOLLOW_INDEX_REDIRECT_TO_LOGIN_URL],
+    def test_urs_exists_at_desired_location_guest(self):
+        """Проверка доступа на станицы, авторизированного пользователя и
+        гостя"""
+        templates_url_names = [
+            [INDEX, self.guest, HTTPStatus.OK],
+            [GROUP, self.guest, HTTPStatus.OK],
+            [PROFILE, self.guest, HTTPStatus.OK],
+            [self.POST_DETAIL, self.guest, HTTPStatus.OK],
+            [CREATE_POST, self.guest, HTTPStatus.FOUND],
+            [CREATE_POST, self.author, HTTPStatus.OK],
+            [self.EDITE_POST, self.author, HTTPStatus.OK],
+            [self.EDITE_POST, self.guest, HTTPStatus.FOUND],
+            [UNEXISTING, self.guest, HTTPStatus.NOT_FOUND],
         ]
-        for address, client, redirect in cases:
-            with self.subTest(redirect=redirect):
-                self.assertRedirects(
-                    client.get(address, follow=True),
-                    redirect
-                )
+        for url, user, answer in templates_url_names:
+            with self.subTest(url=url):
+                self.assertEqual(user.get(url).status_code, answer)
 
-    def test_urls_status_for_different_clients(self):
-        cases = [
-            [POST_CREATE_URL, self.authorized_client, HTTPStatus.OK],
-            [self.POST_EDIT_URL, self.authorized_client, HTTPStatus.OK],
-            [INDEX_URL, self.guest_client, HTTPStatus.OK],
-            # [GROUP_LIST_URL, self.guest_client, HTTPStatus.OK],
-            [self.POST_DETAIL_URL, self.guest_client, HTTPStatus.OK],
-            [PROFILE_URL, self.guest_client, HTTPStatus.OK],
-            [POST_CREATE_URL, self.guest_client, HTTPStatus.FOUND],
-            [self.POST_EDIT_URL, self.guest_client, HTTPStatus.FOUND],
-            [self.POST_EDIT_URL, self.not_author_of_post_client,
-             HTTPStatus.FOUND],
-            [UNEXISTING_URL, self.guest_client,
-             HTTPStatus.NOT_FOUND],
-            [self.COMMENT_CREATE_URL, self.guest_client, HTTPStatus.FOUND],
-            [FOLLOW_INDEX_URL, self.guest_client, HTTPStatus.FOUND],
-            [FOLLOW_URL, self.guest_client, HTTPStatus.FOUND],
-            [UNFOLLOW_URL, self.guest_client, HTTPStatus.FOUND],
+    def test_urls_redirect(self):
+        urls_names = [
+            [CREATE_POST, self.guest, f'{LOGIN_REDIRECT}?next=/create/'],
+            [self.EDITE_POST, self.another, self.POST_DETAIL],
+            [self.EDITE_POST,
+             self.guest, f'{LOGIN_REDIRECT}?next={self.EDITE_POST}']
         ]
-        for address, client, status in cases:
-            with self.subTest(address=address, client=client):
-                self.assertEqual(client.get(address).status_code, status)
+        for url, user, redirect in urls_names:
+            with self.subTest(url=url):
+                self.assertRedirects(user.get(url), redirect)

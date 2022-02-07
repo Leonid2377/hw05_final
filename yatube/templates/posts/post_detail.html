@@ -1,31 +1,37 @@
 {% extends "base.html" %}
-{% load thumbnail %}
-{% block title %}
-  {{ post.text|truncatechars:30 }}
-{% endblock %}
+{% block title %}Пост {{ post.text|truncatechars:30 }}{% endblock %}
 {% block content %}
-  <div class="container py-5">
-    <div class="row">
-      <aside class="col-12 col-md-3">
-        <ul class="list-group list-group-flush">
-          <li class="list-group-item d-flex justify-content-between align-items-center">
-            Всего постов автора:  <span >{{ post.author.posts.count }}</span>
-          </li>
-        </ul>
-      </aside>
-      <article class="col-12 col-md-9">
-        {% include "posts/includes/post.html" %}
-        <hr>
-        {% if post.author == user %}
-          <a class="btn btn-primary" href="{% url 'posts:post_edit' post.pk %}">
-            редактировать запись
-          </a>
-          <a class="btn btn-danger" href="{% url 'posts:delete_post' post.pk %}">
-            удалить запись
-          </a>
-        {% endif %}
-        {% include "posts/includes/comments.html" %}
-      </article>
-    </div>
-  </div>
+<div class="row">
+  <aside class="col-12 col-md-3">
+    <ul class="list-group list-group-flush">
+      <li class="list-group-item">
+        Дата публикации: {{ post.pub_date|date:"d E Y" }}
+      </li>
+      {% if post.group %}
+      <li class="list-group-item">
+        Группа: {{post.group}}
+        <a href="{% url 'posts:group' post.group.slug %}">
+          все записи группы
+        </a>
+      </li>
+      {% endif %}
+      <li class="list-group-item">
+        Автор: {{ post.author.get_full_name }}
+      </li>
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        Всего постов автора:  <span > {{ post.author.posts.count }} </span>
+      </li>
+      <li class="list-group-item">
+        <a href="{% url 'posts:profile' post.author %}">
+          Все посты: {{ post.author.get_full_name }}
+        </a>
+      </li>
+    </ul>
+  </aside>
+  <article class="col-10 col-md-7">
+    <p>
+      {{ post.text|linebreaksbr }}
+    </p>
+  </article>
+</div>
 {% endblock %}

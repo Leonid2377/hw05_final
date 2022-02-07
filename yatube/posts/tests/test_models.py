@@ -7,19 +7,18 @@ class PostModelTest(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.user = User.objects.create_user(username='NoName')
+        cls.user = User.objects.create_user(username='tester')
         cls.group = Group.objects.create(
-            title='Тестовая группа',
+            title='Тестовый заголовок',
             slug='test-slug',
             description='Тестовое описание',
         )
         cls.post = Post.objects.create(
             author=cls.user,
-            text='Тестовая группа',
+            text='Тестовый тeкст' * 100,
+            group=cls.group,
         )
 
-    def test_model_post_have_correct_object_name(self):
-        self.assertEqual(self.post.text[:15], str(self.post))
-
-    def test_model_group_have_correct_object_name(self):
-        self.assertEqual(self.group.title, str(self.group))
+    def test_models_have_correct_object_names(self):
+        self.assertEqual(str(self.group), self.group.title)
+        self.assertEqual(str(self.post), self.post.text[:15])

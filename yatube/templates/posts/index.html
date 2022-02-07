@@ -1,18 +1,25 @@
-{% extends "base.html" %}
-{% load cache %}
+{% extends 'base.html' %} 
 {% block title %}
   Последние обновления на сайте
 {% endblock %}
 {% block content %}
-  {% include "posts/includes/switcher.html" with index=True %}
-  <div class="container py-5">
+  <div class="container">     
     <h1>Последние обновления на сайте</h1>
-    {% cache 20 index_page page_obj.number %}
+    <article>
       {% for post in page_obj %}
-        {% include "posts/includes/post.html" %}
+        <ul>
+          <li>
+            Автор: <a href="{% url 'posts:profile' post.author.username %}"> {{ post.author.get_full_name }} </a>
+          </li>
+          <li>
+            Дата публикации: {{ post.pub_date|date:"d E Y" }}
+          </li>
+        </ul>
+        <p>{{ post.text|linebreaksbr }}</p>    
+        {% if post.group %}Сообщество: <a href="{% url 'posts:group' post.group.slug %}"> {{post.group}} </a>{% endif %}
         {% if not forloop.last %}<hr>{% endif %}
       {% endfor %}
-    {% endcache %}
-    {% include "posts/includes/paginator.html" %}
+    </article>
   </div>
-{% endblock %}
+  {% include 'posts/includes/paginator.html' %}
+{% endblock %}  

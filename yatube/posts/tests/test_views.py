@@ -184,6 +184,11 @@ class FollowUnfollowTest(TestCase):
 
     def test_unfollow(self):
         follow_count = Follow.objects.count()
+        Follow.objects.create(
+            user=self.following,
+            author=self.follower
+        )
+        self.assertEqual(Follow.objects.count(), follow_count + 1)
         self.authorized_client.post(
             reverse('posts:profile_unfollow',
                     kwargs={'username': self.follower})

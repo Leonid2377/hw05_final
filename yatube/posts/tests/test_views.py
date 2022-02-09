@@ -6,7 +6,7 @@ from django.conf import settings
 from django.core.cache import cache
 from django.core.files.uploadedfile import SimpleUploadedFile
 
-from ..models import User, Post, Group, Follow, Comment
+from ..models import User, Post, Group, Follow
 from ..settings import NUMBER_POSTS_ON_PAGE
 
 USERNAME = 'tester'

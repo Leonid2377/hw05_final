@@ -6,7 +6,7 @@ from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from ..forms import forms
-from ..models import Group, Post, User
+from ..models import Comment, Group, Post, User
 
 CREATE_POST = reverse('posts:post_create')
 USERNAME = 'tester'
@@ -55,6 +55,8 @@ class PostCreateFormTests(TestCase):
                                  kwargs={'post_id': cls.post.id})
         cls.POST_DETAIL = reverse('posts:post_detail',
                                   kwargs={'post_id': cls.post.id})
+        cls.ADD_COMMENT = reverse('posts:add_comment',
+                                  kwargs={'post_id': cls.post.id})
 
     @classmethod
     def tearDownClass(cls):
@@ -80,6 +82,9 @@ class PostCreateFormTests(TestCase):
         )
         self.assertEqual(Post.objects.count(), posts_count + 1)
         posts = Post.objects.exclude(id=self.post.id)
+        # Согласен с .first() первоначально так и было,
+        # но А. Квичанский просил переделать
+        # и привел к такой конструкции ¯\_(ツ)_/¯
         self.assertEqual(len(posts), 1)
         post = posts[0]
         self.assertEqual(post.text, form_data['text'])
@@ -127,3 +132,30 @@ class PostCreateFormTests(TestCase):
                         form_field = response.context.get('form').fields.get(
                             value)
                         self.assertIsInstance(form_field, expected)
+
+    def test_guest_create_comment(self):
+        comments_count = Comment.objects.count()
+        guest_client = Client()
+        form_data = {
+            'text': 'TEST',
+            'author': self.user,
+        }
+        guest_client.post(
+            self.ADD_COMMENT,
+            data=form_data,
+            follow=True
+        )
+        self.assertEqual(Comment.objects.count(), comments_count)
+
+    def test_authorized_create_comment(self):
+        comments_count = Comment.objects.count()
+        form_data = {
+            'text': 'TEST',
+            'author': self.user,
+        }
+        self.authorized_client.post(
+            self.ADD_COMMENT,
+            data=form_data,
+            follow=True
+        )
+        self.assertEqual(Comment.objects.count(), comments_count + 1)

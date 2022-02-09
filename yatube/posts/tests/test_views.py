@@ -42,7 +42,6 @@ class PostUrlTests(TestCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.user = User.objects.create_user(username=USERNAME)
-        cls.follower = User.objects.create_user(username='follower')
         cls.group = Group.objects.create(
             title='Тестовый заголовок',
             slug=SLUG,
@@ -112,10 +111,11 @@ class PostUrlTests(TestCase):
     def test_group_in_context_group(self):
         '''Группа в контексте Групп-ленты'''
         response = self.authorized_client.get(GROUP)
-        self.assertEqual(response.context['group'], self.group)
-        self.assertEqual(response.context['group'].title, self.group.title)
-        self.assertEqual(response.context['group'].slug, self.group.slug)
-        self.assertEqual(response.context['group'].description,
+        group_context = response.context['group']
+        self.assertEqual(group_context, self.group)
+        self.assertEqual(group_context.title, self.group.title)
+        self.assertEqual(group_context.slug, self.group.slug)
+        self.assertEqual(group_context.description,
                          self.group.description
                          )
 
@@ -132,29 +132,6 @@ class PostUrlTests(TestCase):
         response = self.client.get(INDEX)
         cache.clear()
         self.assertNotEqual(response, response.content)
-
-    def test_follow_unfollow(self):
-        Comment.objects.create(
-            post=self.post,
-            text='test',
-            author=self.user,
-        )
-        follow_count = Follow.objects.count()
-        self.authorized_client.post(
-            reverse('posts:profile_follow',
-                    kwargs={'username': self.follower})
-        )
-        self.assertTrue(Follow.objects.filter(
-            user=self.user, author=self.follower).exists())
-        self.assertEqual(Follow.objects.count(), follow_count + 1)
-
-        self.authorized_client.post(
-            reverse('posts:profile_unfollow',
-                    kwargs={'username': self.follower})
-        )
-        self.assertEqual(Follow.objects.count(), follow_count)
-        self.assertFalse(Follow.objects.filter(
-            user=self.user, author=self.follower).exists())
 
 
 class PaginatorViewsTest(TestCase):
@@ -179,3 +156,63 @@ class PaginatorViewsTest(TestCase):
         calculation_len_obj = len(response.context['page_obj'])
         calculation_obj = TOTAL_POSTS % NUMBER_POSTS_ON_PAGE
         self.assertEqual(calculation_len_obj, calculation_obj)
+
+
+class FollowUnfollowTest(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.following = User.objects.create_user(username='following')
+        cls.follower = User.objects.create_user(username='follower')
+        cls.not_follower = User.objects.create_user(username='not_follower')
+
+    def setUp(self):
+        self.authorized_client = Client()
+        self.authorized_client.force_login(self.following)
+        self.authorized_client_1 = Client()
+        self.authorized_client_1.force_login(self.not_follower)
+
+    def test_follow(self):
+        follow_count = Follow.objects.count()
+        self.authorized_client.get(
+            reverse('posts:profile_follow',
+                    kwargs={'username': self.follower})
+        )
+        self.assertTrue(Follow.objects.filter(
+            user=self.following, author=self.follower).exists())
+        self.assertEqual(Follow.objects.count(), follow_count + 1)
+
+    def test_unfollow(self):
+        follow_count = Follow.objects.count()
+        self.authorized_client.post(
+            reverse('posts:profile_unfollow',
+                    kwargs={'username': self.follower})
+        )
+        self.assertEqual(Follow.objects.count(), follow_count)
+        self.assertFalse(Follow.objects.filter(
+            user=self.following, author=self.follower).exists())
+
+    def test_post_in_context_page_favorite_authors(self):
+        post = Post.objects.create(
+            text='Тестовый текст',
+            author=self.follower,
+        )
+        Follow.objects.create(
+            user=self.following,
+            author=self.follower,
+        )
+        response = self.authorized_client.get(reverse('posts:follow_index'))
+        self.assertEqual(response.context['page_obj'][0], post)
+
+    def test_post_not_in_context_page_favorite_authors(self):
+        response = self.authorized_client_1.get(reverse('posts:follow_index'))
+        count_posts = len(response.context['page_obj'])
+        Post.objects.create(
+            text='Тестовый текст',
+            author=self.follower,
+        )
+        response = self.authorized_client_1.get(reverse('posts:follow_index'))
+        self.assertEqual(len(response.context['page_obj']), count_posts)
+
+
+cache.clear()

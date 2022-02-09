@@ -1,6 +1,5 @@
 from django.test import Client, TestCase
 from django.urls import reverse
-# from django.conf.urls import handler404
 from http import HTTPStatus
 
 from ..models import Group, Post, User
@@ -40,6 +39,8 @@ class PostUrlTests(TestCase):
 
         cls.EDITE_POST = reverse('posts:post_edit',
                                  kwargs={'post_id': cls.post.id})
+        cls.ADD_COMMENT = reverse('posts:add_comment',
+                                  kwargs={'post_id': cls.post.id})
 
     def setUp(self):
         self.author = Client()
@@ -77,7 +78,7 @@ class PostUrlTests(TestCase):
             [CREATE_POST, self.author, HTTPStatus.OK],
             [self.EDITE_POST, self.author, HTTPStatus.OK],
             [self.EDITE_POST, self.guest, HTTPStatus.FOUND],
-            # [UNEXISTING, self.guest, HTTPStatus.NOT_FOUND],
+            [UNEXISTING, self.guest, HTTPStatus.NOT_FOUND],
         ]
         for url, user, answer in templates_url_names:
             with self.subTest(url=url):
@@ -85,10 +86,12 @@ class PostUrlTests(TestCase):
 
     def test_urls_redirect(self):
         urls_names = [
-            [CREATE_POST, self.guest, f'{LOGIN_REDIRECT}?next=/create/'],
+            [CREATE_POST, self.guest, f'{LOGIN_REDIRECT}?next={CREATE_POST}'],
             [self.EDITE_POST, self.another, self.POST_DETAIL],
             [self.EDITE_POST,
-             self.guest, f'{LOGIN_REDIRECT}?next={self.EDITE_POST}']
+             self.guest, f'{LOGIN_REDIRECT}?next={self.EDITE_POST}'],
+            [self.ADD_COMMENT, self.another, self.POST_DETAIL]
+
         ]
         for url, user, redirect in urls_names:
             with self.subTest(url=url):

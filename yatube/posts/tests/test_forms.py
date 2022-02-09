@@ -82,9 +82,6 @@ class PostCreateFormTests(TestCase):
         )
         self.assertEqual(Post.objects.count(), posts_count + 1)
         posts = Post.objects.exclude(id=self.post.id)
-        # Согласен с .first() первоначально так и было,
-        # но А. Квичанский просил переделать
-        # и привел к такой конструкции ¯\_(ツ)_/¯
         self.assertEqual(len(posts), 1)
         post = posts[0]
         self.assertEqual(post.text, form_data['text'])
